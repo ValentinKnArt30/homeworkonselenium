@@ -7,8 +7,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -18,32 +16,23 @@ public class AppOrderServiceTest {
     private WebDriver driver;
     private WebDriverWait wait;
 
+    @BeforeAll
+    static void setupDriver() {
+        WebDriverManager.chromedriver().setup();
+    }
+
     @BeforeEach
     public void setup() {
-        String browser = System.getenv().getOrDefault("BROWSER", "chrome").toLowerCase();
 
-        switch (browser) {
-            case "firefox":
-                WebDriverManager.firefoxdriver().setup();
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                firefoxOptions.addArguments("--headless");  // headless для CI
-                firefoxOptions.addArguments("--no-sandbox");
-                firefoxOptions.addArguments("--disable-dev-shm-usage");
-                driver = new FirefoxDriver(firefoxOptions);
-                break;
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--headless=new");
+        chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--disable-dev-shm-usage");
 
-            case "chrome":
-            default:
-                WebDriverManager.chromedriver().setup();
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--headless=new");
-                chromeOptions.addArguments("--no-sandbox");
-                chromeOptions.addArguments("--disable-dev-shm-usage");
-                driver = new ChromeDriver(chromeOptions);
-                break;
-        }
-
+        driver = new ChromeDriver(chromeOptions);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        driver.get("http://localhost:9999");
     }
 
     @AfterEach
@@ -55,8 +44,6 @@ public class AppOrderServiceTest {
 
     @Test
     public void shouldTestOrderForm() {
-        driver.get("http://localhost:9999");
-
         driver.findElement(By.cssSelector("[data-test-id='name'] input"))
                 .sendKeys("Иван Иванов");
 
@@ -80,8 +67,6 @@ public class AppOrderServiceTest {
 
     @Test
     public void shouldShowErrorForInvalidName() {
-        driver.get("http://localhost:9999");
-
         driver.findElement(By.cssSelector("[data-test-id='name'] input"))
                 .sendKeys("Ivan Ivanov 1");
 
@@ -104,8 +89,6 @@ public class AppOrderServiceTest {
 
     @Test
     public void shouldShowErrorForInvalidPhone() {
-        driver.get("http://localhost:9999");
-
         driver.findElement(By.cssSelector("[data-test-id='name'] input"))
                 .sendKeys("Иван Иванов");
 
@@ -118,17 +101,15 @@ public class AppOrderServiceTest {
         driver.findElement(By.cssSelector("button.button"))
                 .click();
 
-        WebElement nameError = wait.until(ExpectedConditions
+        WebElement phoneError = wait.until(ExpectedConditions
                 .visibilityOfElementLocated(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")));
 
         Assertions.assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.",
-                nameError.getText().trim());
+                phoneError.getText().trim());
     }
 
     @Test
     public void shouldShowErrorForInvalidPhoneNull() {
-        driver.get("http://localhost:9999");
-
         driver.findElement(By.cssSelector("[data-test-id='name'] input"))
                 .sendKeys("Иван Иванов");
 
@@ -141,17 +122,15 @@ public class AppOrderServiceTest {
         driver.findElement(By.cssSelector("button.button"))
                 .click();
 
-        WebElement nameError = wait.until(ExpectedConditions
+        WebElement phoneError = wait.until(ExpectedConditions
                 .visibilityOfElementLocated(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")));
 
         Assertions.assertEquals("Поле обязательно для заполнения",
-                nameError.getText().trim());
+                phoneError.getText().trim());
     }
 
     @Test
     public void shouldShowErrorForInvalidNameNull() {
-        driver.get("http://localhost:9999");
-
         driver.findElement(By.cssSelector("[data-test-id='name'] input"))
                 .sendKeys("");
 
@@ -169,5 +148,22 @@ public class AppOrderServiceTest {
 
         Assertions.assertEquals("Поле обязательно для заполнения",
                 nameError.getText().trim());
+    }
+
+    @Test
+    public void shouldShowErrorIfAgreementNotChecked() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input"))
+                .sendKeys("Иван Иванов");
+
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
+                .sendKeys("+79999999999");
+
+        driver.findElement(By.cssSelector("button.button"))
+                .click();
+
+        WebElement agreementError = wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.cssSelector("[data-test-id='agreement'].input_invalid")));
+
+        Assertions.assertTrue(agreementError.isDisplayed());
     }
 }
