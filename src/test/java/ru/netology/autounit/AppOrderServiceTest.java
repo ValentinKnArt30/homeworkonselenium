@@ -77,4 +77,97 @@ public class AppOrderServiceTest {
 
         Assertions.assertEquals(expectedMessage, actualMessage.trim());
     }
+
+    @Test
+    public void shouldShowErrorForInvalidName() {
+        driver.get("http://localhost:9999");
+
+        driver.findElement(By.cssSelector("[data-test-id='name'] input"))
+                .sendKeys("Ivan Ivanov 1");
+
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
+                .sendKeys("+79999999999");
+
+        driver.findElement(By.cssSelector("[data-test-id='agreement']"))
+                .click();
+
+        driver.findElement(By.cssSelector("button.button"))
+                .click();
+
+        WebElement nameError = wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")));
+
+        Assertions.assertEquals("Имя и Фамилия указаные неверно. " +
+                        "Допустимы только русские буквы, пробелы и дефисы.",
+                nameError.getText().trim());
+    }
+
+    @Test
+    public void shouldShowErrorForInvalidPhone() {
+        driver.get("http://localhost:9999");
+
+        driver.findElement(By.cssSelector("[data-test-id='name'] input"))
+                .sendKeys("Иван Иванов");
+
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
+                .sendKeys("+7999999-9-8");
+
+        driver.findElement(By.cssSelector("[data-test-id='agreement']"))
+                .click();
+
+        driver.findElement(By.cssSelector("button.button"))
+                .click();
+
+        WebElement nameError = wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")));
+
+        Assertions.assertEquals("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.",
+                nameError.getText().trim());
+    }
+
+    @Test
+    public void shouldShowErrorForInvalidPhoneNull() {
+        driver.get("http://localhost:9999");
+
+        driver.findElement(By.cssSelector("[data-test-id='name'] input"))
+                .sendKeys("Иван Иванов");
+
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
+                .sendKeys("");
+
+        driver.findElement(By.cssSelector("[data-test-id='agreement']"))
+                .click();
+
+        driver.findElement(By.cssSelector("button.button"))
+                .click();
+
+        WebElement nameError = wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.cssSelector("[data-test-id='phone'].input_invalid .input__sub")));
+
+        Assertions.assertEquals("Поле обязательно для заполнения",
+                nameError.getText().trim());
+    }
+
+    @Test
+    public void shouldShowErrorForInvalidNameNull() {
+        driver.get("http://localhost:9999");
+
+        driver.findElement(By.cssSelector("[data-test-id='name'] input"))
+                .sendKeys("");
+
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
+                .sendKeys("+79999999999");
+
+        driver.findElement(By.cssSelector("[data-test-id='agreement']"))
+                .click();
+
+        driver.findElement(By.cssSelector("button.button"))
+                .click();
+
+        WebElement nameError = wait.until(ExpectedConditions
+                .visibilityOfElementLocated(By.cssSelector("[data-test-id='name'].input_invalid .input__sub")));
+
+        Assertions.assertEquals("Поле обязательно для заполнения",
+                nameError.getText().trim());
+    }
 }
