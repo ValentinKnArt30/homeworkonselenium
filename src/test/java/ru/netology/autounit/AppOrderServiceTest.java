@@ -135,7 +135,7 @@ public class AppOrderServiceTest {
                 .sendKeys("");
 
         driver.findElement(By.cssSelector("[data-test-id='phone'] input"))
-                .sendKeys("+79999999999-");
+                .sendKeys("+79999999999");
 
         driver.findElement(By.cssSelector("[data-test-id='agreement']"))
                 .click();
